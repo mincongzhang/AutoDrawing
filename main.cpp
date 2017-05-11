@@ -4,7 +4,7 @@
 #include <tchar.h>  
 #include <vector>
 #include <queue>
-#include <unordered_map>
+#include <map>
 #include <sstream>
 
 #include "BMPReader.h"
@@ -20,7 +20,7 @@ namespace{
 		Point(int x,int y):m_w(x),m_h(y){}
 		std::string toString(){
 			std::stringstream ss;
-			ss<<m_w<<","<<m_h;
+			ss<<m_h<<","<<m_w;
 			return ss.str();
 		}
 	};
@@ -33,14 +33,14 @@ namespace{
 			return sorted; 
 		};
 
-		std::unordered_map<std::string,Point> hash;
+		std::map<std::string,Point> point_map;
 		for(int i=0;i<point_array.size();++i){
 			Point p = point_array[i];
 			std::string key = p.toString();
-			hash.insert(std::make_pair(key,p));
+			point_map.insert(std::make_pair(key,p));
 		}
 
-		if(hash.empty()){ 
+		if(point_map.empty()){ 
 			logInfo("WARNING! point_array is empty!");
 			return sorted; 
 		}
@@ -48,13 +48,13 @@ namespace{
 		//Find nearest neighbour
 		Point p = point_array[0];
 		sorted.push_back(p);
-		hash.erase(p.toString());
+		point_map.erase(p.toString());
 
 		int count = point_array.size();
-		while(!hash.empty()){
+		while(!point_map.empty()){
 			long min_len = LONG_MAX;
 			Point neighbour_point(0,0);
-			for(std::unordered_map<std::string,Point>::const_iterator it=hash.begin();it!=hash.end();++it){
+			for(std::map<std::string,Point>::const_iterator it=point_map.begin();it!=point_map.end();++it){
 				Point tmp_p = it->second;
 				long length = (tmp_p.m_w-p.m_w)*(tmp_p.m_w-p.m_w) + (tmp_p.m_h-p.m_h)*(tmp_p.m_h-p.m_h);
 				if(length<min_len){
@@ -65,7 +65,7 @@ namespace{
 			}
 
 			sorted.push_back(neighbour_point);
-			hash.erase(neighbour_point.toString());
+			point_map.erase(neighbour_point.toString());
 
 			count--;
 			if(count%100==0) {
@@ -92,7 +92,7 @@ int main(){
 		}
 	}
 
-	reader.edgeDetection(50);
+	reader.edgeDetection(20);
 
 	std::vector<Point> point_array;
 	for(int h=0;h<reader.height();h++){
@@ -116,7 +116,7 @@ int main(){
 
 	hideConsole();
 
-	int offset = 150;
+	int offset = 200;
 	int move_thresh = 30;
 	for(int i=0; i<sorted_points.size()-1;++i){
 		SetCursorPos(sorted_points[i].m_w+offset, sorted_points[i].m_h+offset);
@@ -127,7 +127,7 @@ int main(){
 		if( ((p1.m_h-p2.m_h)*(p1.m_h-p2.m_h) + (p1.m_w-p2.m_w)*(p1.m_w-p2.m_w)) > move_thresh ){
 			mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 		}
-		Sleep(5);
+		Sleep(1);
 	}
 	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 
