@@ -57,6 +57,7 @@ namespace{
 				Point tmp_p = it->second;
 				long length = (tmp_p.m_w-p.m_w)*(tmp_p.m_w-p.m_w) + (tmp_p.m_h-p.m_h)*(tmp_p.m_h-p.m_h);
 				if(length<min_len){
+					min_len = length;
 					neighbour_point = tmp_p;
 					p = neighbour_point;
 				}
@@ -106,6 +107,8 @@ int main(){
 		std::cout<<"Drawing starts in ["<<i<<"] second(s)"<<std::endl;
 		Sleep(1000);
 	}
+
+	hideConsole();
 
 	for(int i=0; i<sorted_points.size();++i){
 		SetCursorPos(sorted_points[i].m_w+300, sorted_points[i].m_h+300);
