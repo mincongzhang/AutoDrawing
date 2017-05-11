@@ -25,9 +25,13 @@ namespace{
 		}
 	};
 
-	std::vector<Point> neighbourSort(std::vector<Point> point_array){
+	std::vector<Point> neighbourSort(const std::vector<Point> & point_array){
+		logInfo("Sorting points with neighbours");
 		std::vector<Point> sorted;
-		if(point_array.empty()) {return sorted; };
+		if(point_array.empty()) {
+			logInfo("WARNING! point_array is empty!");
+			return sorted; 
+		};
 
 		std::unordered_map<std::string,Point> hash;
 		for(int i=0;i<point_array.size();++i){
@@ -36,7 +40,10 @@ namespace{
 			hash.insert(std::make_pair(key,p));
 		}
 
-		if(hash.empty()){ return sorted; }
+		if(hash.empty()){ 
+			logInfo("WARNING! point_array is empty!");
+			return sorted; 
+		}
 
 		//Find nearest neighbour
 		Point p = point_array[0];
@@ -59,6 +66,7 @@ namespace{
 			hash.erase(neighbour_point.toString());
 		}
 
+		logInfo("Sorting points with neighbours done");
 		return sorted;
 	}
 }
@@ -77,7 +85,7 @@ int main(){
 		}
 	}
 
-	reader.edgeDetection(30);
+	reader.edgeDetection(70);
 
 	std::vector<Point> point_array;
 	for(int h=0;h<reader.height();h++){
