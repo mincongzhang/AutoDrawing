@@ -6,12 +6,14 @@
 
 #include <stdio.h>
 #include <string>
-
+#include <vector>
 #include "Logger.h"
+
+//REF: http://stackoverflow.com/questions/9296059/read-pixel-value-in-bmp-file
 
 class BMPReader{
 private:
-	unsigned char* m_data_gray_scale;
+	std::vector< std::vector<int> > m_pixels;
 	int m_width;
 	int m_height;
 
@@ -31,20 +33,28 @@ public:
 		m_height = *(int*)&info[22];
 		logInfo("Loaded width ["<<m_width<<"]");	
 		logInfo("Loaded height ["<<m_height<<"]");	
+		int row_padded = (m_width*3 + 3) & (~3);
+		unsigned char* data = new unsigned char[row_padded];
+		unsigned char tmp;
 
-		int size = 3 * m_width * m_height;
-		unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
-		fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
-		fclose(f);
-		unsigned char* m_data_gray_scale = new unsigned char[m_width*m_height];
+		for(int h = 0; h < m_height; h++){
+			fread(data, sizeof(unsigned char), row_padded, f);
+			for(int w = 0; w < m_width*3; w += 3){
+				// Convert (B, G, R) to (R, G, B)
+				tmp = data[w];
+				data[w] = data[w+2];
+				data[w+2] = tmp;
 
-		for(int i = 0; i < size; i += 3){
-			int pixel_pos = i/3;
-			logInfo("loading pixel ["<<pixel_pos<<"] = ["<<data[i]-'0'<<"," <<data[i+1]-'0'<<","<<data[i+2]-'0'<<"], total pixels ["<<m_width*m_height<<"]");
-			Sleep(10);
-			m_data_gray_scale[pixel_pos] = (data[i]+data[i+1]+data[i+2])/3; //the avg of the rgb is the grayscale value
+				int cur_width = w/3;
+				int cur_height = m_height-h;
+				logInfo("[Width,Height]:["<<cur_width<<","<<cur_height<<"],RGB:"<<(int)data[w]<<","<<(int)data[w+1]<<","<<(int)data[w+2]);
+			}
 		}
 
+
+		fclose(f);
+
+		system("PAUSE");
 		delete [] data;  	
 	}
 
@@ -55,7 +65,6 @@ public:
 	}
 
 	~BMPReader(){
-		delete [] m_data_gray_scale;
 	}
 };
 

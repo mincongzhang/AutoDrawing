@@ -12,6 +12,7 @@ namespace{
 }
 
 int main(){
+
 	std::cout<<"auto drawing"<<std::endl;
 
 	BMPReader reader("C:\\Users\\mizhang\\Desktop\\a.bmp");
