@@ -86,7 +86,7 @@ int main(){
 		}
 	}
 
-	reader.edgeDetection(70);
+	reader.edgeDetection(30);
 
 	std::vector<Point> point_array;
 	for(int h=0;h<reader.height();h++){
