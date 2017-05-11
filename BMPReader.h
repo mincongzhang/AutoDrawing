@@ -33,6 +33,18 @@ public:
 		}
 	}
 
+	void edgeDetection(unsigned int min_thresh,unsigned int max_thresh){
+		for(int h=1;h<m_height-1;h++){
+			for(int w=1;w<m_width-1;w++){
+				int cur_pix = m_pixels[w][h]*4;
+				int surroundings = m_pixels[w-1][h]+m_pixels[w][h-1]+m_pixels[w+1][h]+m_pixels[w][h+1];
+				if(std::abs(cur_pix-surroundings)>min_thresh && std::abs(cur_pix-surroundings)<max_thresh){
+					m_edge_pixels[w][h] = true;
+				}
+			}
+		}
+	}
+
 	BMPReader(const std::string & filename){
 		//OPEN FILE
 		FILE* f = fopen(filename.c_str(), "rb");

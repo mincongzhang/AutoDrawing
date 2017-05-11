@@ -5,6 +5,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <unordered_map>
 #include <sstream>
 
 #include "BMPReader.h"
@@ -25,6 +26,7 @@ namespace{
 		}
 	};
 
+	typedef std::unordered_map<std::string,Point> PointMap;
 	std::vector<Point> neighbourSort(const std::vector<Point> & point_array){
 		logInfo("Sorting ["<<point_array.size()<<"] points with neighbours");
 		std::vector<Point> sorted;
@@ -33,7 +35,7 @@ namespace{
 			return sorted; 
 		};
 
-		std::map<std::string,Point> point_map;
+		PointMap point_map;
 		for(int i=0;i<point_array.size();++i){
 			Point p = point_array[i];
 			std::string key = p.toString();
@@ -54,7 +56,7 @@ namespace{
 		while(!point_map.empty()){
 			long min_len = LONG_MAX;
 			Point neighbour_point(0,0);
-			for(std::map<std::string,Point>::const_iterator it=point_map.begin();it!=point_map.end();++it){
+			for(PointMap::const_iterator it=point_map.begin();it!=point_map.end();++it){
 				Point tmp_p = it->second;
 				long length = (tmp_p.m_w-p.m_w)*(tmp_p.m_w-p.m_w) + (tmp_p.m_h-p.m_h)*(tmp_p.m_h-p.m_h);
 				if(length<min_len){
@@ -76,6 +78,22 @@ namespace{
 		logInfo("Sorting points with neighbours done");
 		return sorted;
 	}
+
+	std::vector<Point> getLayer(BMPReader & reader,unsigned int thresh_min,unsigned int thresh_max){
+		reader.edgeDetection(thresh_min,thresh_max);
+
+		std::vector<Point> point_array;
+		for(int h=0;h<reader.height();h++){
+			for(int w=0;w<reader.width();w++){
+				//logInfo("Is edge["<<h<<","<<w<<"]:"<<reader.isEdge(w,h));
+				if(reader.isEdge(w,h)){
+					point_array.push_back(Point(w,h));
+				}
+			}
+		}
+		return neighbourSort(point_array);
+	}
+
 }
 
 int main(){
@@ -92,19 +110,16 @@ int main(){
 		}
 	}
 
-	reader.edgeDetection(20);
+	std::vector<Point> sorted_points;
+	std::vector<Point> layer_points;
+	layer_points = getLayer(reader,80,120);
+	sorted_points.insert(sorted_points.begin(),layer_points.begin(),layer_points.end());
 
-	std::vector<Point> point_array;
-	for(int h=0;h<reader.height();h++){
-		for(int w=0;w<reader.width();w++){
-			//logInfo("Is edge["<<h<<","<<w<<"]:"<<reader.isEdge(w,h));
-			if(reader.isEdge(w,h)){
-				point_array.push_back(Point(w,h));
-			}
-		}
-	}
+	layer_points = getLayer(reader,120,255);
+	sorted_points.insert(sorted_points.begin(),layer_points.begin(),layer_points.end());
 
-	std::vector<Point> sorted_points = neighbourSort(point_array);
+	layer_points = getLayer(reader,30,80);
+	sorted_points.insert(sorted_points.begin(),layer_points.begin(),layer_points.end());
 
 	////////////////////////////////////
 	// DRAW
