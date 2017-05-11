@@ -62,10 +62,10 @@ namespace{
 				if(length<min_len){
 					min_len = length;
 					neighbour_point = tmp_p;
-					p = neighbour_point;
 				}
 			}
 
+			p = neighbour_point;
 			sorted.push_back(neighbour_point);
 			point_map.erase(neighbour_point.toString());
 
@@ -112,13 +112,13 @@ int main(){
 
 	std::vector<Point> sorted_points;
 	std::vector<Point> layer_points;
-	layer_points = getLayer(reader,80,120);
+	layer_points = getLayer(reader,80,100);
 	sorted_points.insert(sorted_points.begin(),layer_points.begin(),layer_points.end());
 
-	layer_points = getLayer(reader,120,255);
+	layer_points = getLayer(reader,100,255);
 	sorted_points.insert(sorted_points.begin(),layer_points.begin(),layer_points.end());
 
-	layer_points = getLayer(reader,30,80);
+	layer_points = getLayer(reader,30,100);
 	sorted_points.insert(sorted_points.begin(),layer_points.begin(),layer_points.end());
 
 	////////////////////////////////////
