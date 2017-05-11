@@ -4,6 +4,8 @@
 #include <tchar.h>  
 #include <vector>
 #include <queue>
+#include <unordered_map>
+#include <sstream>
 
 #include "BMPReader.h"
 #include "Logger.h"
@@ -16,7 +18,49 @@ namespace{
 	struct Point{
 		int m_w,m_h;
 		Point(int x,int y):m_w(x),m_h(y){}
+		std::string toString(){
+			std::stringstream ss;
+			ss<<m_w<<","<<m_h;
+			return ss.str();
+		}
 	};
+
+	std::vector<Point> neighbourSort(std::vector<Point> point_array){
+		std::vector<Point> sorted;
+		if(point_array.empty()) {return sorted; };
+
+		std::unordered_map<std::string,Point> hash;
+		for(int i=0;i<point_array.size();++i){
+			Point p = point_array[i];
+			std::string key = p.toString();
+			hash.insert(std::make_pair(key,p));
+		}
+
+		if(hash.empty()){ return sorted; }
+
+		//Find nearest neighbour
+		Point p = point_array[0];
+		sorted.push_back(p);
+		hash.erase(p.toString());
+
+		while(!hash.empty()){
+			long min_len = LONG_MAX;
+			Point neighbour_point(0,0);
+			for(std::unordered_map<std::string,Point>::const_iterator it=hash.begin();it!=hash.end();++it){
+				Point tmp_p = it->second;
+				long length = (tmp_p.m_w-p.m_w)*(tmp_p.m_w-p.m_w) + (tmp_p.m_h-p.m_h)*(tmp_p.m_h-p.m_h);
+				if(length<min_len){
+					neighbour_point = tmp_p;
+					p = neighbour_point;
+				}
+			}
+
+			sorted.push_back(neighbour_point);
+			hash.erase(neighbour_point.toString());
+		}
+
+		return sorted;
+	}
 }
 
 int main(){
@@ -35,29 +79,30 @@ int main(){
 
 	reader.edgeDetection(30);
 
-	std::queue<Point> point_q;
+	std::vector<Point> point_array;
 	for(int h=0;h<reader.height();h++){
 		for(int w=0;w<reader.width();w++){
 			//logInfo("Is edge["<<h<<","<<w<<"]:"<<reader.isEdge(w,h));
 			if(reader.isEdge(w,h)){
-				point_q.push(Point(w,h));
+				point_array.push_back(Point(w,h));
 			}
 		}
 	}
+
+	std::vector<Point> sorted_points = neighbourSort(point_array);
 
 	////////////////////////////////////
 	// DRAW
 	////////////////////////////////////
 	for(int i=5;i>0;--i){
-		std::cout<<"Drawing starts in ["<<i<<"] seconds"<<std::endl;
+		std::cout<<"Drawing starts in ["<<i<<"] second(s)"<<std::endl;
 		Sleep(1000);
 	}
 
-	while(!point_q.empty()){
-		SetCursorPos(point_q.front().m_w+300, point_q.front().m_h+300);
+	for(int i=0; i<sorted_points.size();++i){
+		SetCursorPos(sorted_points[i].m_w+300, sorted_points[i].m_h+300);
 		mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 		mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-		point_q.pop();
 		Sleep(3);
 	}
 
