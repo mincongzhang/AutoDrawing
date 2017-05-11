@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <stdlib.h>
 #include "Logger.h"
 
 //REF: http://stackoverflow.com/questions/9296059/read-pixel-value-in-bmp-file
@@ -14,10 +15,24 @@
 class BMPReader{
 private:
 	std::vector< std::vector<int> > m_pixels;
+	std::vector< std::vector<bool> > m_edge_pixels;
 	int m_width;
 	int m_height;
 
 public:
+
+	void edgeDetection(unsigned int thresh){
+		for(int h=1;h<m_height-1;h++){
+			for(int w=1;w<m_width-1;w++){
+				int cur_pix = m_pixels[w][h]*4;
+				int surroundings = m_pixels[w-1][h]+m_pixels[w][h-1]+m_pixels[w+1][h]+m_pixels[w][h+1];
+				if(std::abs(cur_pix-surroundings)>thresh){
+					m_edge_pixels[w][h] = true;
+				}
+			}
+		}
+	}
+
 	BMPReader(const std::string & filename){
 		//OPEN FILE
 		FILE* f = fopen(filename.c_str(), "rb");
@@ -35,11 +50,14 @@ public:
 		logInfo("Loaded width ["<<m_width<<"]");	
 		logInfo("Loaded height ["<<m_height<<"]");
 
-		// INIT m_pixels
+		// INIT m_pixels and m_edge_pixels
 		std::vector<int> height_vector(m_height,0);
 		std::vector< std::vector<int> > pixels(m_width,height_vector);
 		m_pixels = pixels;
-		logInfo(m_pixels.size());
+		std::vector<bool> height_bool_vector(m_height,false);
+		std::vector< std::vector<bool> > edge_pixels(m_width,height_bool_vector);
+		m_edge_pixels = edge_pixels;
+
 
 		//GET PIXEL
 		int row_padded = (m_width*3 + 3) & (~3);
@@ -72,6 +90,10 @@ public:
 	int width(){ return m_width; }
 	int getPixel(unsigned int width,unsigned int height){
 		return m_pixels[width][height];
+	}
+
+	bool isEdge(unsigned int width,unsigned int height){
+		return m_edge_pixels[width][height];
 	}
 };
 
