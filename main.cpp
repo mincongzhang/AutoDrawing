@@ -4,6 +4,7 @@
 #include <tchar.h>  
 
 #include "BMPReader.h"
+#include "Logger.h"
 
 namespace{
 	void hideConsole(){
@@ -16,7 +17,11 @@ int main(){
 	std::cout<<"auto drawing"<<std::endl;
 
 	BMPReader reader("C:\\Users\\mizhang\\Desktop\\a.bmp");
-
+	for(int h=0;h<reader.height();h++){
+		for(int w=0;w<reader.width();w++){
+			logInfo("Loading pixel in greyscale["<<h<<","<<w<<"]:"<<reader.getPixel(w,h));
+		}
+	}
 
 	for(int i=10;i>0;--i){
 		std::cout<<"Drawing starts in ["<<i<<"] seconds"<<std::endl;

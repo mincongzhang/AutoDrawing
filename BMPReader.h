@@ -19,24 +19,32 @@ private:
 
 public:
 	BMPReader(const std::string & filename){
+		//OPEN FILE
 		FILE* f = fopen(filename.c_str(), "rb");
 		if(!f){
 			logInfo("WARNING! Failed to open file ["<<filename<<"]");			
 		} else {
 			logInfo("Successfilly opened file ["<<filename<<"]");		
 		}
-		unsigned char info[54];
-		fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 
 		// extract image m_height and m_width from header
+		unsigned char info[54];
+		fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 		m_width = *(int*)&info[18];
 		m_height = *(int*)&info[22];
 		logInfo("Loaded width ["<<m_width<<"]");	
-		logInfo("Loaded height ["<<m_height<<"]");	
+		logInfo("Loaded height ["<<m_height<<"]");
+
+		// INIT m_pixels
+		std::vector<int> height_vector(m_height,0);
+		std::vector< std::vector<int> > pixels(m_width,height_vector);
+		m_pixels = pixels;
+		logInfo(m_pixels.size());
+
+		//GET PIXEL
 		int row_padded = (m_width*3 + 3) & (~3);
 		unsigned char* data = new unsigned char[row_padded];
 		unsigned char tmp;
-
 		for(int h = 0; h < m_height; h++){
 			fread(data, sizeof(unsigned char), row_padded, f);
 			for(int w = 0; w < m_width*3; w += 3){
@@ -46,25 +54,24 @@ public:
 				data[w+2] = tmp;
 
 				int cur_width = w/3;
-				int cur_height = m_height-h;
-				logInfo("[Width,Height]:["<<cur_width<<","<<cur_height<<"],RGB:"<<(int)data[w]<<","<<(int)data[w+1]<<","<<(int)data[w+2]);
+				int cur_height = (m_height-h) - 1;
+				m_pixels[cur_width][cur_height] = ((int)data[w]+(int)data[w+1]+(int)data[w+2])/3;
+				//logInfo("[Width,Height]:["<<cur_width<<","<<cur_height<<"],RGB:"<<(int)data[w]<<","<<(int)data[w+1]<<","<<(int)data[w+2]
+				//<<" GREY:"<<m_pixels[cur_width][cur_height]);
 			}
 		}
 
-
 		fclose(f);
 
-		system("PAUSE");
+		logInfo("["<<filename<<"] Loaded. ");
+		//system("PAUSE");
 		delete [] data;  	
 	}
 
 	int height(){ return m_height; }
 	int width(){ return m_width; }
 	int getPixel(unsigned int width,unsigned int height){
-		return 1;
-	}
-
-	~BMPReader(){
+		return m_pixels[width][height];
 	}
 };
 
