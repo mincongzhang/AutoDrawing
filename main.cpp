@@ -26,7 +26,7 @@ namespace{
 	};
 
 	std::vector<Point> neighbourSort(const std::vector<Point> & point_array){
-		logInfo("Sorting points with neighbours");
+		logInfo("Sorting ["<<point_array.size()<<"] points with neighbours");
 		std::vector<Point> sorted;
 		if(point_array.empty()) {
 			logInfo("WARNING! point_array is empty!");
@@ -50,6 +50,7 @@ namespace{
 		sorted.push_back(p);
 		hash.erase(p.toString());
 
+		int count = point_array.size();
 		while(!hash.empty()){
 			long min_len = LONG_MAX;
 			Point neighbour_point(0,0);
@@ -65,6 +66,11 @@ namespace{
 
 			sorted.push_back(neighbour_point);
 			hash.erase(neighbour_point.toString());
+
+			count--;
+			if(count%100==0) {
+				logInfo("["<<count<<"] remaining...");
+			}
 		}
 
 		logInfo("Sorting points with neighbours done");
@@ -86,7 +92,7 @@ int main(){
 		}
 	}
 
-	reader.edgeDetection(30);
+	reader.edgeDetection(50);
 
 	std::vector<Point> point_array;
 	for(int h=0;h<reader.height();h++){
@@ -110,13 +116,20 @@ int main(){
 
 	hideConsole();
 
-	for(int i=0; i<sorted_points.size();++i){
-		SetCursorPos(sorted_points[i].m_w+300, sorted_points[i].m_h+300);
+	int offset = 150;
+	int move_thresh = 30;
+	for(int i=0; i<sorted_points.size()-1;++i){
+		SetCursorPos(sorted_points[i].m_w+offset, sorted_points[i].m_h+offset);
 		mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-		mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-		Sleep(3);
-	}
 
+		Point p1 = sorted_points[i];
+		Point p2 = sorted_points[i+1];
+		if( ((p1.m_h-p2.m_h)*(p1.m_h-p2.m_h) + (p1.m_w-p2.m_w)*(p1.m_w-p2.m_w)) > move_thresh ){
+			mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+		}
+		Sleep(5);
+	}
+	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 
 	system("PAUSE");
 }
